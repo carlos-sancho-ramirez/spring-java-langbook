@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Langbook</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+  <h1 th:text="#{details.header(${accText})}"/>
+  <table>
+    <tbody>
+      <tr>
+        <td>Id:</td>
+        <td th:text="${accId}"/>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

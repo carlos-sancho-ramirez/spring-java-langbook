@@ -9,11 +9,13 @@
     <input type="text" id="query" name="query" th:value="${query}"/>
     <input type="submit" th:value="#{mainSearch.search}"/>
   </form>
-  <p th:text="#{mainSearch.resultsHeader(${query})}"/>
+  <h1 th:text="#{mainSearch.resultsHeader(${query})}"/>
   <table>
     <tbody>
-      <tr th:each="text : ${texts}">
-        <td th:text="${text}"/>
+      <tr th:each="acceptation : ${acceptations}">
+        <td>
+          <a th:href="'/details/' + ${acceptation.id}" th:text="${acceptation.text}"/>
+        </td>
       </tr>
     </tbody>
   </table>
