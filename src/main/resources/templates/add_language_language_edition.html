@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Langbook</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+  <form action="/intention/addLanguage" method="get">
+    <fieldset>
+      <legend th:text="#{addLanguage.basicInfoLegend}"/>
+      <label for="languageCode" th:text="#{addLanguage.languageCodeInputLabel}"/>
+      <input type="text" id="languageCode" name="languageCode" readonly th:value="${languageCode}"/>
+      <label for="alphabetCount" th:text="#{addLanguage.alphabetCountInputLabel}"/>
+      <input type="text" id="alphabetCount" name="alphabetCount" readonly th:value="${alphabetCount}"/>
+    </fieldset>
+    <fieldset>
+      <legend th:text="#{addLanguage.languageLegend}"/>
+      <div th:each="alphabetId : ${alphabetIds}">
+        <label th:for="${languageId} + ${alphabetId}" th:text="${alphabetId}"/>
+        <input type="text" th:id="${languageId} + ${alphabetId}" th:name="${languageId} + ${alphabetId}"/>
+      </div>
+    </fieldset>
+    <input type="submit" th:value="#{nextButton}"/>
+  </form>
+</body>
+</html>
