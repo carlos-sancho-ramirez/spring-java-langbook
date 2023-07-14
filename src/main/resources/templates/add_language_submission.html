@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
-  <form action="/intention/addLanguage" method="get">
+  <form action="/intention/addLanguage" method="post">
     <fieldset>
       <legend th:text="#{addLanguage.basicInfoLegend}"/>
       <label for="languageCode" th:text="#{addLanguage.languageCodeInputLabel}"/>
@@ -17,13 +17,7 @@
         <input type="text" th:id="${definition.id}" th:name="${definition.id}" readonly th:value="${definition.text}"/>
       </div>
     </fieldset>
-    <fieldset>
-      <legend th:text="#{addLanguage.languageLegend}"/>
-      <div th:each="correlation : ${correlations}">
-        <input type="radio" th:id="${defining}" th:name="${defining}" th:value="${correlation.id}" th:text="${correlation.text}"/>
-      </div>
-    </fieldset>
-    <input type="submit" th:value="#{nextButton}"/>
+    <input type="submit" th:value="#{alphabets.addLanguageMenuItem}"/>
   </form>
 </body>
 </html>

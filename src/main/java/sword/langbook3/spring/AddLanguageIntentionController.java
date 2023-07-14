@@ -2,16 +2,15 @@ package sword.langbook3.spring;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import sword.collections.*;
 import sword.langbook3.android.db.ImmutableCorrelation;
 import sword.langbook3.android.db.ImmutableCorrelationArray;
-import sword.langbook3.spring.db.AlphabetId;
-import sword.langbook3.spring.db.LangbookDbManagerImpl;
-import sword.langbook3.spring.db.LanguageId;
+import sword.langbook3.android.models.LanguageCreationResult;
+import sword.langbook3.spring.db.*;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Controller
 public final class AddLanguageIntentionController {
@@ -37,17 +36,17 @@ public final class AddLanguageIntentionController {
         }
     }
 
-    public record CorrelationArrayOption(String id, String text) {
+    public record DisplayableItem(String id, String text) {
     }
 
-    private static final char COMPOSED_ID_SEPARATOR = '.';
+    private static final char ENCODED_ARRAY_SEPARATOR = '.';
 
     private String composeId(ImmutableCorrelationArray<String> option) {
         // Currently this will fail if texts include separator
         // TODO: Changing this logic to allow the separator characters
         return option
-                .map(corr -> corr.sort(SortUtils::compareCharSequenceByUnicode).reduce((a, b) -> a + COMPOSED_ID_SEPARATOR + b))
-                .reduce((a, b) -> a + COMPOSED_ID_SEPARATOR + b);
+                .map(corr -> corr.sort(SortUtils::compareCharSequenceByUnicode).reduce((a, b) -> a + ENCODED_ARRAY_SEPARATOR + b))
+                .reduce((a, b) -> a + ENCODED_ARRAY_SEPARATOR + b);
     }
 
     private String composeText(ImmutableCorrelationArray<String> option) {
@@ -56,6 +55,25 @@ public final class AddLanguageIntentionController {
         return option
                 .map(corr -> corr.sort(SortUtils::compareCharSequenceByUnicode).reduce((a, b) -> a + '/' + b))
                 .reduce((a, b) -> a + " + " + b);
+    }
+
+    private ImmutableCorrelationArray<AlphabetId> decodeCorrelationArray(List<AlphabetId> alphabetIds, String encoded) {
+        final String[] parts = encoded.split(Pattern.quote("" + ENCODED_ARRAY_SEPARATOR));
+        if (parts.length == 0 || parts.length % alphabetIds.size() != 0) {
+            throw new IllegalArgumentException();
+        }
+
+        final ImmutableCorrelationArray.Builder<AlphabetId> builder = new ImmutableCorrelationArray.Builder<>();
+        int partIndex = 0;
+        while (partIndex < parts.length) {
+            ImmutableCorrelation<AlphabetId> correlation = ImmutableCorrelation.empty();
+            for (AlphabetId alphabetId : alphabetIds) {
+                correlation = correlation.put(alphabetId, parts[partIndex++]);
+            }
+            builder.add(correlation);
+        }
+
+        return builder.build();
     }
 
     @GetMapping("/intention/addLanguage")
@@ -69,27 +87,83 @@ public final class AddLanguageIntentionController {
             final int alphabetCount = Integer.parseInt(alphabetCountStr);
             final ImmutableList<String> alphabetIds = new ImmutableIntRange(1, alphabetCount).map(i -> "a" + i);
 
-            final ImmutableList<String> languageTexts = alphabetIds.map(id -> requestParams.get("l" + id));
-            if (languageTexts.allMatch(t -> t != null && t.length() > 0)) {
-                ImmutableCorrelation<String> correlation = ImmutableCorrelation.empty();
-                for (String alphabetId : alphabetIds) {
-                    correlation = correlation.put(alphabetId, requestParams.get("l" + alphabetId));
-                }
-
-                final ImmutableList<CorrelationArrayOption> options = correlation
-                        .checkPossibleCorrelationArrays(SortUtils::compareCharSequenceByUnicode)
-                        .map(opt -> new CorrelationArrayOption(composeId(opt), composeText(opt)));
-                model.addAttribute("correlations", options);
-                return "add_language_language_correlation_picker";
+            String defining = null;
+            final MutableList<DisplayableItem> definitions = MutableList.empty();
+            if (requestParams.containsKey("l")) {
+                definitions.append(new DisplayableItem("l", requestParams.get("l")));
             }
             else {
-                model.addAttribute("languageId", "l");
-                model.addAttribute("alphabetIds", alphabetIds);
-                return "add_language_language_edition";
+                defining = "l";
+            }
+
+            for (String alphabetId : alphabetIds) {
+                if (requestParams.containsKey(alphabetId)) {
+                    definitions.append(new DisplayableItem(alphabetId, requestParams.get(alphabetId)));
+                }
+                else if (defining == null) {
+                    defining = alphabetId;
+                }
+            }
+            model.addAttribute("definitions", definitions.toImmutable());
+
+            if (defining == null) {
+                return "add_language_submission";
+            }
+            else {
+                final ImmutableList<String> definedTexts = alphabetIds.map(id -> requestParams.get("d" + id));
+                if (definedTexts.allMatch(t -> t != null && t.length() > 0)) {
+                    ImmutableCorrelation<String> correlation = ImmutableCorrelation.empty();
+                    for (String alphabetId : alphabetIds) {
+                        correlation = correlation.put(alphabetId, requestParams.get("d" + alphabetId));
+                    }
+
+                    final ImmutableList<DisplayableItem> options = correlation
+                            .checkPossibleCorrelationArrays(SortUtils::compareCharSequenceByUnicode)
+                            .map(opt -> new DisplayableItem(composeId(opt), composeText(opt)));
+                    model.addAttribute("defining", defining);
+                    model.addAttribute("correlations", options);
+                    return "add_language_language_correlation_picker";
+                } else {
+                    model.addAttribute("alphabetIds", alphabetIds);
+                    return "add_language_language_edition";
+                }
             }
         }
         else {
             return "add_language";
         }
     }
+
+    @PostMapping("/intention/addLanguage")
+    public String postLanguage(@RequestParam Map<String, String> requestBody) {
+        // TODO: We should check that all required parameters are present and valid before touching the database
+
+        final LangbookDbManagerImpl dbManager = LangbookApplication.getDbManager();
+        final LanguageCreationResult<LanguageId, AlphabetId> languageResult = dbManager.addLanguage(requestBody.get("languageCode"));
+
+        final MutableList<AlphabetId> alphabetIds = MutableList.empty();
+        alphabetIds.append(languageResult.mainAlphabet);
+
+        final int alphabetCount = Integer.parseInt(requestBody.get("alphabetCount"));
+        for (int i = 1; i < alphabetCount; i++) {
+            final AlphabetId newAlphabet = AlphabetIdManager.conceptAsAlphabetId(dbManager.getNextAvailableConceptId());
+            alphabetIds.append(newAlphabet);
+            if (!dbManager.addAlphabetCopyingFromOther(newAlphabet, languageResult.mainAlphabet)) {
+                throw new AssertionError();
+            }
+        }
+
+        dbManager.addAcceptation(languageResult.language.getConceptId(), decodeCorrelationArray(alphabetIds, requestBody.get("l")));
+        int alphabetIndex = 0;
+        for (AlphabetId alphabetId : alphabetIds) {
+            final String paramId = "a" + (++alphabetIndex);
+            final String encoded = requestBody.get(paramId);
+            if (dbManager.addAcceptation(alphabetId.getConceptId(), decodeCorrelationArray(alphabetIds, encoded)) == null) {
+                throw new AssertionError();
+            }
+        }
+
+        return "redirect:/alphabets";
+    }
+
 }
