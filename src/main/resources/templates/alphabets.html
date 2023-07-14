@@ -5,6 +5,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
+  <div>
+    <ul>
+      <li>
+        <a href="/intention/addLanguage" th:text="#{alphabets.addLanguageMenuItem}"/>
+      </li>
+    </ul>
+  </div>
   <div th:each="language : ${languages}">
     <h2 th:text="${language.text}"/>
     <ul th:each="alphabet : ${language.alphabets}">
