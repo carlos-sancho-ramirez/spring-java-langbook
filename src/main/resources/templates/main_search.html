@@ -5,6 +5,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
+  <div>
+    <ul>
+      <li>
+        <a href="/alphabets" th:text="#{mainSearch.checkAlphabetsMenuItem}"/>
+      </li>
+    </ul>
+  </div>
   <form action="/" method="get">
     <input type="text" id="query" name="query" th:value="${query}"/>
     <input type="submit" th:value="#{mainSearch.search}"/>

@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Langbook</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+  <div th:each="language : ${languages}">
+    <h2 th:text="${language.text}"/>
+    <ul th:each="alphabet : ${language.alphabets}">
+      <li th:text="${alphabet.text}"/>
+    </ul>
+  </div>
+</body>
+</html>
