@@ -5,6 +5,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
-  <p>Hello, user</p>
+  <p th:text="'Displaying result for ' + ${query}"/>
+  <table>
+    <tbody>
+      <tr th:each="text : ${texts}">
+        <td th:text="${text}"/>
+      </tr>
+    </tbody>
+  </table>
 </body>
 </html>
