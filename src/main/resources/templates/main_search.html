@@ -5,7 +5,11 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
-  <p th:text="'Displaying result starting with ' + ${query}"/>
+  <form action="/" method="get">
+    <input type="text" id="query" name="query" th:value="${query}"/>
+    <input type="submit" th:value="#{mainSearch.search}"/>
+  </form>
+  <p th:text="#{mainSearch.resultsHeader(${query})}"/>
   <table>
     <tbody>
       <tr th:each="text : ${texts}">
