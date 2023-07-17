@@ -87,18 +87,47 @@ public final class AddLanguageIntentionController {
             final int alphabetCount = Integer.parseInt(alphabetCountStr);
             final ImmutableList<String> alphabetIds = new ImmutableIntRange(1, alphabetCount).map(i -> "a" + i);
 
+            final ImmutableList<String> definedTexts = alphabetIds.map(id -> requestParams.get("d" + id));
+            final boolean definedTextsAreValid = definedTexts.allMatch(t -> t != null && t.length() > 0);
+            final ImmutableSet<ImmutableCorrelationArray<String>> rawOptions;
+            if (definedTextsAreValid) {
+                ImmutableCorrelation<String> correlation = ImmutableCorrelation.empty();
+                for (String alphabetId : alphabetIds) {
+                    correlation = correlation.put(alphabetId, requestParams.get("d" + alphabetId));
+                }
+
+                rawOptions = correlation.checkPossibleCorrelationArrays(SortUtils::compareCharSequenceByUnicode);
+            }
+            else {
+                rawOptions = ImmutableHashSet.empty();
+            }
+
             String defining = null;
+            boolean definedTextsConsumed = false;
             final MutableList<DisplayableItem> definitions = MutableList.empty();
             if (requestParams.containsKey("l")) {
                 definitions.append(new DisplayableItem("l", requestParams.get("l")));
+            }
+            else if (rawOptions.size() == 1) {
+                definitions.append(new DisplayableItem("l", composeId(rawOptions.valueAt(0))));
+                definedTextsConsumed = true;
+                defining = "a1";
             }
             else {
                 defining = "l";
             }
 
-            for (String alphabetId : alphabetIds) {
+            for (int alphabetIndex : alphabetIds.indexes()) {
+                final String alphabetId = alphabetIds.valueAt(alphabetIndex);
                 if (requestParams.containsKey(alphabetId)) {
                     definitions.append(new DisplayableItem(alphabetId, requestParams.get(alphabetId)));
+                }
+                else if (defining == null && rawOptions.size() == 1) {
+                    definitions.append(new DisplayableItem(alphabetId, composeId(rawOptions.valueAt(0))));
+                    definedTextsConsumed = true;
+                    if (alphabetIndex + 1 < alphabetIds.size()) {
+                        defining = alphabetIds.valueAt(alphabetIndex + 1);
+                    }
                 }
                 else if (defining == null) {
                     defining = alphabetId;
@@ -110,15 +139,8 @@ public final class AddLanguageIntentionController {
                 return "add_language_submission";
             }
             else {
-                final ImmutableList<String> definedTexts = alphabetIds.map(id -> requestParams.get("d" + id));
-                if (definedTexts.allMatch(t -> t != null && t.length() > 0)) {
-                    ImmutableCorrelation<String> correlation = ImmutableCorrelation.empty();
-                    for (String alphabetId : alphabetIds) {
-                        correlation = correlation.put(alphabetId, requestParams.get("d" + alphabetId));
-                    }
-
-                    final ImmutableList<DisplayableItem> options = correlation
-                            .checkPossibleCorrelationArrays(SortUtils::compareCharSequenceByUnicode)
+                if (definedTextsAreValid && !definedTextsConsumed) {
+                    final ImmutableList<DisplayableItem> options = rawOptions
                             .map(opt -> new DisplayableItem(composeId(opt), composeText(opt)));
                     model.addAttribute("defining", defining);
                     model.addAttribute("correlations", options);
