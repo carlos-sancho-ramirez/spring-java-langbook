@@ -7,7 +7,7 @@
 <body>
   <form action="/intention/addLanguage" method="get">
     <fieldset>
-      <legend th:text="#{addLanguage.basicInfoLegend}"/>
+      <legend th:text="#{intention.alreadyEnteredInfoLegend}"/>
       <label for="languageCode" th:text="#{addLanguage.languageCodeInputLabel}"/>
       <input type="text" id="languageCode" name="languageCode" readonly th:value="${languageCode}"/>
       <label for="alphabetCount" th:text="#{addLanguage.alphabetCountInputLabel}"/>
@@ -18,7 +18,7 @@
       </div>
     </fieldset>
     <fieldset>
-      <legend th:text="#{addLanguage.languageLegend}"/>
+      <legend th:text="#{intention.requiredInfoLegend}"/>
       <div th:each="correlation : ${correlations}">
         <input type="radio" th:id="${defining}" th:name="${defining}" th:value="${correlation.id}" th:text="${correlation.text}"/>
       </div>

@@ -1,5 +1,6 @@
 package sword.langbook3.spring;
 
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -9,7 +10,9 @@ import sword.langbook3.android.db.ImmutableCorrelationArray;
 import sword.langbook3.android.models.LanguageCreationResult;
 import sword.langbook3.spring.db.*;
 
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
 @Controller
@@ -37,6 +40,9 @@ public final class AddLanguageIntentionController {
     }
 
     public record DisplayableItem(String id, String text) {
+    }
+
+    public record NamedItem(String id, String label, String text) {
     }
 
     private static final char ENCODED_ARRAY_SEPARATOR = '.';
@@ -104,12 +110,21 @@ public final class AddLanguageIntentionController {
 
             String defining = null;
             boolean definedTextsConsumed = false;
-            final MutableList<DisplayableItem> definitions = MutableList.empty();
+            final MutableList<NamedItem> definitions = MutableList.empty();
+            final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+            messageSource.setBasename("messages");
+            messageSource.setDefaultEncoding("UTF-8");
+            final Locale locale = Locale.getDefault();
+
             if (requestParams.containsKey("l")) {
-                definitions.append(new DisplayableItem("l", requestParams.get("l")));
+                final String concept = messageSource.getMessage("concept.language", null, locale);
+                final String label = messageSource.getMessage("addLanguage.requiredItemLabel", new Object[] { concept }, locale);
+                definitions.append(new NamedItem("l", label, requestParams.get("l")));
             }
             else if (rawOptions.size() == 1) {
-                definitions.append(new DisplayableItem("l", composeId(rawOptions.valueAt(0))));
+                final String concept = messageSource.getMessage("concept.language", null, locale);
+                final String label = messageSource.getMessage("addLanguage.requiredItemLabel", new Object[] { concept }, locale);
+                definitions.append(new NamedItem("l", label, composeId(rawOptions.valueAt(0))));
                 definedTextsConsumed = true;
                 defining = "a1";
             }
@@ -120,10 +135,16 @@ public final class AddLanguageIntentionController {
             for (int alphabetIndex : alphabetIds.indexes()) {
                 final String alphabetId = alphabetIds.valueAt(alphabetIndex);
                 if (requestParams.containsKey(alphabetId)) {
-                    definitions.append(new DisplayableItem(alphabetId, requestParams.get(alphabetId)));
+                    final String index = alphabetId.substring(1);
+                    final String concept = messageSource.getMessage("concept.alphabet", null, locale) + " " + index;
+                    final String label = messageSource.getMessage("addLanguage.requiredItemLabel", new Object[] { concept }, locale);
+                    definitions.append(new NamedItem(alphabetId, label, requestParams.get(alphabetId)));
                 }
                 else if (defining == null && rawOptions.size() == 1) {
-                    definitions.append(new DisplayableItem(alphabetId, composeId(rawOptions.valueAt(0))));
+                    final String index = alphabetId.substring(1);
+                    final String concept = messageSource.getMessage("concept.alphabet", null, locale) + " " + index;
+                    final String label = messageSource.getMessage("addLanguage.requiredItemLabel", new Object[] { concept }, locale);
+                    definitions.append(new NamedItem(alphabetId, label, composeId(rawOptions.valueAt(0))));
                     definedTextsConsumed = true;
                     if (alphabetIndex + 1 < alphabetIds.size()) {
                         defining = alphabetIds.valueAt(alphabetIndex + 1);
@@ -146,7 +167,16 @@ public final class AddLanguageIntentionController {
                     model.addAttribute("correlations", options);
                     return "add_language_language_correlation_picker";
                 } else {
-                    model.addAttribute("alphabetIds", alphabetIds);
+                    final boolean isDefiningLanguage = "l".equals(defining);
+                    final ImmutableList<NamedItem> requiredItems = alphabetIds.map(alphabetId -> {
+                        final String id = "d" + alphabetId;
+                        final String index = alphabetId.substring(1);
+                        final String conceptType = messageSource.getMessage(isDefiningLanguage? "concept.language" : "concept.alphabet", null, locale);
+                        final String concept = isDefiningLanguage? conceptType : conceptType + " " + index;
+                        final String label = messageSource.getMessage("addLanguage.requiredItemLabel", new Object[] { concept }, locale);
+                        return new NamedItem(id, label, null);
+                    });
+                    model.addAttribute("requiredItems", requiredItems);
                     return "add_language_language_edition";
                 }
             }

@@ -7,13 +7,13 @@
 <body>
   <form action="/intention/addLanguage" method="post">
     <fieldset>
-      <legend th:text="#{addLanguage.basicInfoLegend}"/>
+      <legend th:text="#{intention.alreadyEnteredInfoLegend}"/>
       <label for="languageCode" th:text="#{addLanguage.languageCodeInputLabel}"/>
       <input type="text" id="languageCode" name="languageCode" readonly th:value="${languageCode}"/>
       <label for="alphabetCount" th:text="#{addLanguage.alphabetCountInputLabel}"/>
       <input type="text" id="alphabetCount" name="alphabetCount" readonly th:value="${alphabetCount}"/>
       <div th:each="definition : ${definitions}">
-        <label th:for="${definition.id}">Defined</label>
+        <label th:for="${definition.id}" th:text="${definition.label}"/>
         <input type="text" th:id="${definition.id}" th:name="${definition.id}" readonly th:value="${definition.text}"/>
       </div>
     </fieldset>
