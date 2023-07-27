@@ -5,6 +5,11 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
+  <div>
+    <h1>
+      <a href="/">Langbook</a>
+    </h1>
+  </div>
   <form action="/intention/addLanguage" method="get">
     <label for="languageCode" th:text="#{addLanguage.languageCodeInputLabel}"/>
     <input type="text" id="languageCode" name="languageCode" placeholder="en" pattern="[a-z][a-z]" th:value="${languageCode}"/>
