@@ -30,4 +30,13 @@ public final class LanguageId extends ConceptualId implements LanguageIdInterfac
     public String toString() {
         return Integer.toString(key);
     }
+
+    public static LanguageId from(String value) {
+        try {
+            return new LanguageId(Integer.parseInt(value));
+        }
+        catch (RuntimeException e) {
+            return null;
+        }
+    }
 }
