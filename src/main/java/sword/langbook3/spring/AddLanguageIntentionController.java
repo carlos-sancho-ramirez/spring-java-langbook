@@ -47,7 +47,7 @@ public final class AddLanguageIntentionController {
 
     private static final char ENCODED_ARRAY_SEPARATOR = '.';
 
-    private String composeId(ImmutableCorrelationArray<String> option) {
+    static String composeId(ImmutableCorrelationArray<String> option) {
         // Currently this will fail if texts include separator
         // TODO: Changing this logic to allow the separator characters
         return option
@@ -55,7 +55,7 @@ public final class AddLanguageIntentionController {
                 .reduce((a, b) -> a + ENCODED_ARRAY_SEPARATOR + b);
     }
 
-    private String composeText(ImmutableCorrelationArray<String> option) {
+    static String composeText(ImmutableCorrelationArray<String> option) {
         // Currently this will fail if texts include ','
         // TODO: Changing this logic to allow the separator characters
         return option

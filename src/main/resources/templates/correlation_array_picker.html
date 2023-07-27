@@ -21,12 +21,12 @@
     </fieldset>
     <fieldset>
       <legend th:text="#{intention.requiredInfoLegend}"/>
-      <div th:each="requiredItem : ${requiredItems}">
-        <label th:for="${requiredItem.id}" th:text="${requiredItem.label}"/>
-        <input type="text" th:id="${requiredItem.id}" th:name="${requiredItem.id}"/>
-      </div>
+      <label th:for="${selectorId}" th:text="#{correlationArrayPicker.selectorLabel}"/>
+        <div th:each="option : ${options}">
+          <input type="radio" th:id="${selectorId}" th:name="${selectorId}" th:value="${option.id}" th:text="${option.text}"/>
+        </div>
+      <input type="submit" th:value="#{nextButton}"/>
     </fieldset>
-    <input type="submit" th:value="#{nextButton}"/>
   </form>
 </body>
 </html>
