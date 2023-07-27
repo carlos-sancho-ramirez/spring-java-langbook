@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Langbook</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+  <div>
+    <h1>
+      <a href="/">Langbook</a>
+    </h1>
+  </div>
+  <form th:action="${submitHref}" method="get">
+    <label th:for="${selectorId}" th:text="#{languagePicker.selectorLabel}"/>
+    <select th:each="option : ${options}" th:id="${selectorId}" th:name="${selectorId}">
+      <option th:value="${option.id}" th:text="${option.text}"/>
+    </select>
+    <input type="submit" th:value="#{nextButton}"/>
+  </form>
+</body>
+</html>
