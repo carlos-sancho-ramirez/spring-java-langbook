@@ -42,7 +42,14 @@ public final class AddAcceptationIntentionController {
         final LangbookDbManagerImpl dbManager = LangbookApplication.getDbManager();
         final ImmutableMap<LanguageId, String> languagesMap = dbManager.readAllLanguages(preferredAlphabet);
 
-        final LanguageId languageId = LanguageId.from(requestParams.get(ArgKeys.LANGUAGE));
+        LanguageId languageId = LanguageId.from(requestParams.get(ArgKeys.LANGUAGE));
+        if (languageId == null) {
+            final LanguageId uniqueLanguage = dbManager.getUniqueLanguage();
+            if (uniqueLanguage != null) {
+                languageId = uniqueLanguage;
+            }
+        }
+
         if (languageId == null) {
             model.addAttribute("selectorId", ArgKeys.LANGUAGE);
 
@@ -69,29 +76,35 @@ public final class AddAcceptationIntentionController {
 
                 return "word_editor";
             }
-            else if (!correlationArrayPresent) {
+            else {
                 ImmutableCorrelation<String> correlation = ImmutableCorrelation.empty();
                 for (String alphabetId : alphabetMap.keySet().map(AlphabetId::toString)) {
                     correlation = correlation.put(alphabetId, requestParams.get(ArgKeys.ALPHABET_PREFIX + alphabetId));
                 }
 
                 final ImmutableSet<ImmutableCorrelationArray<String>> rawOptions = correlation.checkPossibleCorrelationArrays(SortUtils::compareCharSequenceByUnicode);
-                final ImmutableList<AddLanguageIntentionController.DisplayableItem> options = rawOptions
-                        .map(opt -> new AddLanguageIntentionController.DisplayableItem(composeId(opt), composeText(opt)));
+                String encodedCorrelationArray = requestParams.get(ArgKeys.CORRELATION_ARRAY);
+                if (encodedCorrelationArray == null && rawOptions.size() == 1) {
+                    encodedCorrelationArray = composeId(rawOptions.valueAt(0));
+                }
 
-                model.addAttribute("definitions", definitionsBuilder.build());
-                model.addAttribute("selectorId", ArgKeys.CORRELATION_ARRAY);
-                model.addAttribute("options", options);
-                return "correlation_array_picker";
-            }
-            else {
-                final String encodedCorrelationArray = requestParams.get(ArgKeys.CORRELATION_ARRAY);
-                final String displayableCorrelationArray = composeTextFromEncoded(alphabetMap.keySet().toList(), encodedCorrelationArray);
-                definitionsBuilder.append(new Definition(ArgKeys.CORRELATION_ARRAY, messageSource.getMessage("concept.correlationArray", null, locale), encodedCorrelationArray, displayableCorrelationArray));
+                if (encodedCorrelationArray == null) {
+                    final ImmutableList<AddLanguageIntentionController.DisplayableItem> options = rawOptions
+                            .map(opt -> new AddLanguageIntentionController.DisplayableItem(composeId(opt), composeText(opt)));
 
-                model.addAttribute("definitions", definitionsBuilder.build());
-                model.addAttribute("submitText", messageSource.getMessage("mainSearch.addAcceptation", null, locale));
-                return "submission";
+                    model.addAttribute("definitions", definitionsBuilder.build());
+                    model.addAttribute("selectorId", ArgKeys.CORRELATION_ARRAY);
+                    model.addAttribute("options", options);
+                    return "correlation_array_picker";
+                }
+                else {
+                    final String displayableCorrelationArray = composeTextFromEncoded(alphabetMap.keySet().toList(), encodedCorrelationArray);
+                    definitionsBuilder.append(new Definition(ArgKeys.CORRELATION_ARRAY, messageSource.getMessage("concept.correlationArray", null, locale), encodedCorrelationArray, displayableCorrelationArray));
+
+                    model.addAttribute("definitions", definitionsBuilder.build());
+                    model.addAttribute("submitText", messageSource.getMessage("mainSearch.addAcceptation", null, locale));
+                    return "submission";
+                }
             }
         }
     }
