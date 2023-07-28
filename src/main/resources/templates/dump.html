@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Langbook</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  </head>
+  <body>
+    <div th:each="table : ${content}">
+      <h2 th:text="${table.name}"/>
+      <table>
+        <tr>
+          <td th:each="name : ${table.columnNames}">
+            <b th:text="${name}"/>
+          </td>
+        </tr>
+        <tr th:each="row : ${table.content}">
+          <td th:each="value : ${row}" th:text="${value}"/>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

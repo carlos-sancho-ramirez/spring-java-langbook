@@ -2,6 +2,8 @@ package sword.langbook3.spring;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import sword.database.Database;
+import sword.database.DbExporter;
 import sword.database.MemoryDatabase;
 import sword.langbook3.android.db.ImmutableCorrelation;
 import sword.langbook3.android.db.ImmutableCorrelationArray;
@@ -15,10 +17,12 @@ import sword.langbook3.spring.db.LanguageId;
 public class LangbookApplication {
 
 	private static AlphabetId preferredAlphabet;
+	private static Database database;
 	private static LangbookDbManagerImpl dbManager;
 
 	private static void setUpDatabaseAndPreferences() {
-		dbManager = new LangbookDbManagerImpl(new MemoryDatabase());
+		database = new MemoryDatabase();
+		dbManager = new LangbookDbManagerImpl(database);
 		final LanguageCreationResult<LanguageId, AlphabetId> langResult = dbManager.addLanguage("es");
 		final AlphabetId alphabet = langResult.mainAlphabet;
 		preferredAlphabet = alphabet;
@@ -29,6 +33,14 @@ public class LangbookApplication {
 		addSimpleAcceptation(dbManager, alphabet, "casa");
 		addSimpleAcceptation(dbManager, alphabet, "castillo");
 		addSimpleAcceptation(dbManager, alphabet, "barraca");
+	}
+
+	public static DbExporter.Database getDatabase() {
+		if (database == null) {
+			setUpDatabaseAndPreferences();
+		}
+
+		return database;
 	}
 
 	public static LangbookDbManagerImpl getDbManager() {
