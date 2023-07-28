@@ -55,15 +55,19 @@ public final class AddLanguageIntentionController {
                 .reduce((a, b) -> a + ENCODED_ARRAY_SEPARATOR + b);
     }
 
-    static String composeText(ImmutableCorrelationArray<String> option) {
+    private static <K> String composeText(SortFunction<K> sortFunction, ImmutableCorrelationArray<K> option) {
         // Currently this will fail if texts include ','
         // TODO: Changing this logic to allow the separator characters
         return option
-                .map(corr -> corr.sort(SortUtils::compareCharSequenceByUnicode).reduce((a, b) -> a + '/' + b))
+                .map(corr -> corr.sort(sortFunction).reduce((a, b) -> a + '/' + b))
                 .reduce((a, b) -> a + " + " + b);
     }
 
-    private ImmutableCorrelationArray<AlphabetId> decodeCorrelationArray(List<AlphabetId> alphabetIds, String encoded) {
+    static String composeText(ImmutableCorrelationArray<String> option) {
+        return composeText(SortUtils::compareCharSequenceByUnicode, option);
+    }
+
+    static ImmutableCorrelationArray<AlphabetId> decodeCorrelationArray(List<AlphabetId> alphabetIds, String encoded) {
         final String[] parts = encoded.split(Pattern.quote("" + ENCODED_ARRAY_SEPARATOR));
         if (parts.length == 0 || parts.length % alphabetIds.size() != 0) {
             throw new IllegalArgumentException();
@@ -80,6 +84,11 @@ public final class AddLanguageIntentionController {
         }
 
         return builder.build();
+    }
+
+    static String composeTextFromEncoded(List<AlphabetId> alphabetIds, String encoded) {
+        final SortFunction<AlphabetId> sortFunction = (a, b) -> SortUtils.compareCharSequenceByUnicode(a.toString(), b.toString());
+        return composeText(sortFunction, decodeCorrelationArray(alphabetIds, encoded));
     }
 
     @GetMapping("/intention/addLanguage")
@@ -217,5 +226,4 @@ public final class AddLanguageIntentionController {
 
         return "redirect:/alphabets";
     }
-
 }

@@ -10,7 +10,9 @@ import sword.langbook3.spring.db.AlphabetId;
 @Controller
 public final class AcceptationDetailsController {
 
-    @GetMapping("/details/{accId}")
+    static final String PATH = "/details/";
+
+    @GetMapping(PATH + "{accId}")
     public String getDetails(@PathVariable("accId") String accId, Model model) {
         final AlphabetId preferredAlphabet = LangbookApplication.getPreferredAlphabet();
         final var details = LangbookApplication.getDbManager().getAcceptationsDetails(new AcceptationId(Integer.parseInt(accId)), preferredAlphabet);

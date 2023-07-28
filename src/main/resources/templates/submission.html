@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Langbook</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+  <div>
+    <h1>
+      <a href="/">Langbook</a>
+    </h1>
+  </div>
+  <form th:action="${submitHref}" method="post">
+    <fieldset>
+      <legend th:text="#{intention.alreadyEnteredInfoLegend}"/>
+      <div th:each="definition : ${definitions}">
+        <label th:for="'_' + ${definition.id}" th:text="${definition.label}"/>
+        <input type="text" th:id="'_' + ${definition.id}" th:name="'_' + ${definition.id}" disabled th:value="${definition.displayedValue}"/>
+        <input type="hidden" th:id="${definition.id}" th:name="${definition.id}" th:value="${definition.value}"/>
+      </div>
+    </fieldset>
+    <input type="submit" th:value="${submitText}"/>
+  </form>
+</body>
+</html>
