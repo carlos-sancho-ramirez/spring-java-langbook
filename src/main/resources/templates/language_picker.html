@@ -12,8 +12,10 @@
   </div>
   <form th:action="${submitHref}" method="get">
     <label th:for="${selectorId}" th:text="#{languagePicker.selectorLabel}"/>
-    <select th:each="option : ${options}" th:id="${selectorId}" th:name="${selectorId}">
-      <option th:value="${option.id}" th:text="${option.text}"/>
+    <select th:id="${selectorId}" th:name="${selectorId}">
+      <th:block th:each="option : ${options}">
+        <option th:value="${option.id}" th:text="${option.text}"/>
+      </th:block>
     </select>
     <input type="submit" th:value="#{nextButton}"/>
   </form>
