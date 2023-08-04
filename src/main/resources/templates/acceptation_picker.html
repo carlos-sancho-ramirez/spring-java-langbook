@@ -10,16 +10,14 @@
       <a href="/">Langbook</a>
     </h1>
     <ul>
-      <li>
-        <a href="/alphabets" th:text="#{mainSearch.checkAlphabetsMenuItem}"/>
-      </li>
-      <li>
-        <a href="/intention/addAcceptation" th:text="#{mainSearch.addAcceptation}"/>
+      <li th:each="item : ${menuItems}">
+        <a th:href="${item.href}" th:text="${item.text}"/>
       </li>
     </ul>
   </div>
-  <form action="/" method="get">
-    <input type="text" id="query" name="query" th:value="${query}"/>
+  <form th:action="${queryHref}" method="get">
+    <input type="hidden" th:each="definition : ${definitions}" th:id="${definition.id}" th:name="${definition.id}" th:value="${definition.value}"/>
+    <input type="text" id="q" name="q" th:value="${q}"/>
     <input type="submit" th:value="#{mainSearch.search}"/>
   </form>
   <h1 th:text="#{mainSearch.resultsHeader(${query})}"/>
@@ -27,7 +25,7 @@
     <tbody>
       <tr th:each="acceptation : ${acceptations}">
         <td>
-          <a th:href="'/acceptationDetails/' + ${acceptation.id}" th:text="${acceptation.text}"/>
+          <a th:href="${acceptation.href}" th:text="${acceptation.text}"/>
         </td>
       </tr>
     </tbody>
