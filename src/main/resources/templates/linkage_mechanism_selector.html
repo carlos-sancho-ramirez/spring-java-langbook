@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Langbook</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+  <div>
+    <h1>
+      <a href="/">Langbook</a>
+    </h1>
+  </div>
+  <form th:action="${submitHref}" method="get">
+    <input type="hidden" th:each="definition : ${definitions}" th:id="${definition.id}" th:name="${definition.id}" th:value="${definition.value}"/>
+    <input type="radio" th:id="m" th:name="m" th:value="s" th:text="#{linkageMechanismSelector.shareConcept}"/>
+    <input type="radio" th:id="m" th:name="m" th:value="d" th:text="#{linkageMechanismSelector.duplicateAcceptation}"/>
+    <input type="submit" th:value="#{nextButton}"/>
+  </form>
+  <h2 th:text="#{linkageMechanismSelector.shareConcept}"/>
+  <p th:text="${shareConceptDescription}">
+  <h2 th:text="#{linkageMechanismSelector.duplicateAcceptation}"/>
+  <p th:text="${duplicateAcceptationDescription}">
+</body>
+</html>

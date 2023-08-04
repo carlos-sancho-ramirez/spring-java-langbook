@@ -46,4 +46,13 @@ public final class AcceptationId implements AcceptationIdInterface {
     public String toString() {
         return Integer.toString(key);
     }
+
+    public static AcceptationId from(String value) {
+        try {
+            return new AcceptationId(Integer.parseInt(value));
+        }
+        catch (RuntimeException e) {
+            return null;
+        }
+    }
 }
