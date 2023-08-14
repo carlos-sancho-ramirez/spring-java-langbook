@@ -10,7 +10,7 @@
       <a href="/">Langbook</a>
     </h1>
   </div>
-  <form th:action="${submitHref}" method="post">
+  <form id="submitForm" th:action="${submitHref}" method="post">
     <fieldset>
       <legend th:text="#{intention.alreadyEnteredInfoLegend}"/>
       <div th:each="definition : ${definitions}">

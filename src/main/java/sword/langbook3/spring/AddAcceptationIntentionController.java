@@ -23,7 +23,7 @@ import static sword.langbook3.spring.AddLanguageIntentionController.*;
 @Controller
 public final class AddAcceptationIntentionController {
 
-    private static final String URL = "/intention/addAcceptation";
+    static final String URL = "/intention/addAcceptation";
 
     private interface ArgKeys {
         String ALPHABET_PREFIX = "a";
